@@ -6,14 +6,12 @@ import pygame_gui.ui_manager
 # inicialização do pygame
 pygame.init()
 pygame.display.set_caption("RoboRhythm")
-icon = pygame.image.load('76011.png')
 original_logo = pygame.image.load('logo.jpeg')
 original_keybinds = pygame.image.load('keybinds.png')
 lar_tel = 800
 alt_tel = 600
 logo = pygame.transform.scale(original_logo,(600, 600))
 keybinds = pygame.transform.scale(original_keybinds,(200,150))
-pygame.display.set_icon(icon)
 
 #gamestates
 #---------------#

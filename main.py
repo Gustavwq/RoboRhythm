@@ -88,7 +88,7 @@ SPRITE_SIZE = 60
 def draw_quiz():
     global selected_answer
 
-    # ✅ prevent crash after quiz ends
+    # prevent crash after quiz ends
     if not quiz_questions or current_question_index >= len(quiz_questions):
         return
     if not quiz_questions:

@@ -25,7 +25,6 @@ castleentry_x = 7695
 castleentry_y = 250
 lives = MAX_HEALTH
 
-# Menu assets
 menu_button_path = "assets/images/mainmenu"
 hi_main_menu = pygame.image.load(os.path.join(menu_button_path, "RobotHI.png")).convert_alpha()
 play_button = pygame.image.load(os.path.join(menu_button_path, "PlayButton.png")).convert_alpha()
@@ -76,8 +75,7 @@ quiz_questions = []
 current_question_index = 0
 tip_font = pygame.font.Font("assets/fonts/joystixmono.otf", 18)
 
-# Positions
-tip_y = HEIGHT - 40  # near bottom of screen
+tip_y = HEIGHT - 40
 prefix_x = 20
 selected_answer = None
 quiz_cleared = False
@@ -88,7 +86,6 @@ SPRITE_SIZE = 60
 def draw_quiz():
     global selected_answer
 
-    # prevent crash after quiz ends
     if not quiz_questions or current_question_index >= len(quiz_questions):
         return
     if not quiz_questions:
@@ -133,13 +130,12 @@ def handle_quiz_screen():
         ans_text = font.render(str(ans), True, WHITE)
         screen.blit(ans_text, (rect.x + 30, rect.y + 15))
 
-    # Process mouse click
     if selected_answer is None and pygame.mouse.get_pressed()[0]:
         mx, my = pygame.mouse.get_pos()
         for rect, ans in answer_rects:
             if rect.collidepoint(mx, my):
                 selected_answer = ans
-                pygame.time.set_timer(pygame.USEREVENT + 1, 300)  # slight delay
+                pygame.time.set_timer(pygame.USEREVENT + 1, 300)
                 break
 
     pygame.display.flip()
@@ -153,7 +149,6 @@ def generate_quiz():
         b = random.randint(1, 1000)
         op = random.choice(ops)
 
-        # Avoid division by zero
         if op == '/':
             b = random.randint(1, 100) or 1
             a = b * random.randint(1, 100)
@@ -230,11 +225,11 @@ class Enemy:
         self.on_ground = False
         self.frame_index = 0
         self.anim_timer = 0
-        self.facing_right = True  # Controls flip
+        self.facing_right = True
         self.active = True
         self.respawn_timer = 0
         self.last_direction_change_time = time.time()
-        self.direction_change_cooldown = 1.0  # 1 second delay
+        self.direction_change_cooldown = 1.0
 
     def deactivate(self):
         self.active = False
@@ -292,7 +287,6 @@ class Enemy:
 
         self.x += self.vx
 
-        # Update facing direction
         if self.vx > 0:
             self.facing_right = True
         elif self.vx < 0:
@@ -307,7 +301,6 @@ class Enemy:
             return
         image = enemy_walk[self.frame_index] if abs(self.vx) > 0.2 else enemy_idle
 
-        # Flip if sprite faces left by default and enemy is facing right
         if self.facing_right:
             image = pygame.transform.flip(image, True, False)
 
@@ -328,7 +321,6 @@ def draw_text_with_stroke(surface, text, font, x, y, text_color, stroke_color=BL
     else:
         rect = text_surface.get_rect(topleft=(x, y))
 
-    # Draw stroke by rendering the text around the original position
     for dx in [-stroke_width, 0, stroke_width]:
         for dy in [-stroke_width, 0, stroke_width]:
             if dx == 0 and dy == 0:
@@ -337,7 +329,6 @@ def draw_text_with_stroke(surface, text, font, x, y, text_color, stroke_color=BL
             stroke_surf = font.render(text, True, stroke_color)
             surface.blit(stroke_surf, offset_pos)
 
-    # Draw the main text
     surface.blit(text_surface, rect)
 
 def generate_platforms():
@@ -359,7 +350,7 @@ def generate_platforms():
             x += segment_width
             continue
 
-        if random.random() < 0.15:  # 15% chance for a hole
+        if random.random() < 0.15:
             x += hole_width
         else:
             width = random.randint(150, 300)
@@ -367,19 +358,16 @@ def generate_platforms():
             platforms.append(segment)
             x += width
 
-    # ✅ LEFT and RIGHT walls
     platforms.append(left_wall)
     platforms.append(right_wall)
     
 
-    # HOLE DETECTION for helper platforms
     holes = []
-    for x in range(0, total_ground_width, 64):  # scan in 64px chunks
+    for x in range(0, total_ground_width, 64): 
         overlapping = any(p["x"] <= x <= p["x"] + p["width"] for p in platforms if p["y"] == ground_y)
         if not overlapping:
             holes.append(x)
 
-    # Spawn helper platforms above those holes
     for hole_x in holes:
         plat_width = random.randint(100, 160)
         plat_x = hole_x - random.randint(0, plat_width // 2)
@@ -393,14 +381,13 @@ def generate_platforms():
             "height": 20
         }
 
-        # Avoid overlap
         if not any(check_overlap(platform, p) for p in platforms):
             platforms.append(platform)
 
     for platform in platforms:
-        if platform["y"] == HEIGHT - 50 and random.random() < 0.25:  # 30% chance to place tree
+        if platform["y"] == HEIGHT - 50 and random.random() < 0.25:
             tree_x = platform["x"] + random.randint(0, platform["width"] - 100)
-            tree_y = platform["y"] - 150  # adjust to stand on top
+            tree_y = platform["y"] - 150
             trees.append({"x": tree_x, "y": tree_y})
 
     return platforms, trees
@@ -449,7 +436,6 @@ def reset_game():
     left_wall = {"x": -10, "y": 0, "width": 1, "height": HEIGHT}
 
     player_x, player_y = 100, HEIGHT - SPRITE_SIZE - 50
-    # Clouds
     clouds = []
     used_x_positions = []
     cloud_count = 15
@@ -458,15 +444,14 @@ def reset_game():
 
     ground_y = HEIGHT - 50
     cloud_min_y = 40
-    cloud_max_y = ground_y - 80  # Never touch the ground
+    cloud_max_y = ground_y - 80
 
     def generate_cloud_y():
         while True:
             y = random.randint(cloud_min_y, cloud_max_y)
-            if abs(y - player_y) > 60:  # Avoid player's Y level
+            if abs(y - player_y) > 60:
                 return y
-
-    # Near player clouds
+            
     near_player_clouds = random.randint(1, 2)
     for _ in range(near_player_clouds):
         for attempt in range(20):
@@ -479,7 +464,6 @@ def reset_game():
                 clouds.append({"x": cloud_x, "y": cloud_y, "vx": drift_speed})
                 break
 
-    # Remaining clouds
     while len(clouds) < cloud_count:
         cloud_x = random.randint(0, world_width)
         if any(abs(cloud_x - ux) < min_cloud_spacing for ux in used_x_positions):
@@ -507,7 +491,6 @@ def reset_game():
     platforms, trees = generate_platforms()
     ground_platforms = [p for p in platforms if p["y"] == HEIGHT - 50 and p["width"] >= SPRITE_SIZE * 2]
 
-    # Fallback if none found
     if not ground_platforms:
         ground_platforms = [{"x": 0, "y": HEIGHT - 50, "width": 300, "height": 50}]
 
@@ -555,11 +538,11 @@ def lose_life():
         if game_time < 0:
             game_time = 0
         if health <= 0:
-            # Don't reset player position here!
+
             exploding = True
             explosion_timer = 0
             explosion_played = False
-            explosion_finished_time = None  # RESET this too
+            explosion_finished_time = None 
         else:
             player_x = 100
             player_y = HEIGHT - SPRITE_SIZE - 50
@@ -570,9 +553,8 @@ def draw_player():
     global walk_index, anim_timer, shield_flashing
 
     if invincible and int(time.time() * 10) % 2 == 0:
-        return  # Flash off
+        return
 
-    # Force pose: down = sit, up = hi
     if keys[pygame.K_LCTRL]:
         image = sit_frame
     elif keys[pygame.K_SPACE]:
@@ -596,7 +578,6 @@ def draw_player():
     image = pygame.transform.scale(image, (SPRITE_SIZE, SPRITE_SIZE))
     screen.blit(image, (player_x - camera_x, player_y - camera_y))
 
-    # Draw shield
     if has_shield and shields > 0:
         now = time.time()
         flashing_duration = 0.5
@@ -624,11 +605,11 @@ def draw_explosion():
     else:
         if not explosion_finished_time:
             explosion_finished_time = time.time()
-            freeze_input = True  # Freeze inputs immediately
+            freeze_input = True
         exploding = False
 
 def show_main_menu():
-    screen.blit(menu_bg, (0, 0))  # Use the image instead of solid color
+    screen.blit(menu_bg, (0, 0))
     screen.blit(title_image, (179, 150))
     screen.blit(hi_main_menu, (325, 200))
     play_rect = play_button.get_rect(center=(WIDTH // 2.1, HEIGHT // 1.45 - 80))
@@ -638,7 +619,6 @@ def show_main_menu():
     pygame.display.flip()
     return play_rect, quit_rect
 
-# Start in menu
 in_main_menu = True
 reset_game()
 clock = pygame.time.Clock()
@@ -649,11 +629,9 @@ while True:
     for cloud in clouds:
         cloud["x"] += cloud["vx"]
 
-    # Reappear on the left when off the right edge
     if cloud["x"] > WIDTH * 5:
         cloud["x"] = -100
 
-    # Optional wrap-around
     if cloud["x"] > WIDTH * 5:
         cloud["x"] = -100
     elif cloud["x"] < -100:
@@ -821,14 +799,14 @@ while True:
     camera_y = max(min(camera_y, max_camera_y), 0)
 
     screen.fill(SKYBLUE)
-    tree_parallax_x = camera_x * 0.1  # 30% of camera movement
+    tree_parallax_x = camera_x * 0.1
     water_parallax_x = camera_x * 0.1
 
     screen.blit(giant_tree_image, (-tree_parallax_x, 0))
     for i in range(-1, 20):
         screen.blit(waterbg_image, (i * waterbg_image.get_width() - water_parallax_x, 525))
-    cloud_parallax_x = camera_x * 0.2  # further back
-    cloud_parallax_y = camera_y * 0.1  # slight vertical parallax
+    cloud_parallax_x = camera_x * 0.2 
+    cloud_parallax_y = camera_y * 0.1 
 
     for cloud in clouds:
         screen.blit(cloud_image, (
@@ -855,7 +833,7 @@ while True:
         if leftover:
             partial = pygame.transform.scale(grass_tile, (leftover, platform["height"]))
             screen.blit(partial, (draw_x + full_tiles * 64, draw_y))
-    # LEVEL INTRO TEXT
+
     if show_level_intro:
         fade_duration = 1.5
         total_duration = 3
@@ -866,9 +844,9 @@ while True:
         else:
             alpha = 255
             if elapsed_intro < fade_duration:
-                alpha = int(255 * (elapsed_intro / fade_duration))  # fade in
+                alpha = int(255 * (elapsed_intro / fade_duration))
             elif elapsed_intro > total_duration - fade_duration:
-                alpha = int(255 * ((total_duration - elapsed_intro) / fade_duration))  # fade out
+                alpha = int(255 * ((total_duration - elapsed_intro) / fade_duration))
 
             level_text = big_font.render("LEVEL 1 - Os Campos", True, WHITE)
             level_text.set_alpha(alpha)
@@ -891,7 +869,7 @@ while True:
 
         if player_rect.colliderect(castleentry_rect):
             prompt_x = player_x - camera_x + SPRITE_SIZE // 2 - interact_prompt.get_width() // 2
-            prompt_y = player_y - camera_y - interact_prompt.get_height() - 10  # 10px above head
+            prompt_y = player_y - camera_y - interact_prompt.get_height() - 10
             screen.blit(interact_prompt, (prompt_x, prompt_y))
             text = font.render("SPACE", True, WHITE)
             text_rect = text.get_rect(center=(
@@ -902,11 +880,11 @@ while True:
 
         if player_rect.colliderect(castleentry_rect) and keys[pygame.K_SPACE] and not in_quiz and not quiz_cleared:
             in_quiz = True
-            quiz_questions = generate_quiz()  # dynamic generation
+            quiz_questions = generate_quiz() 
             current_question_index = 0
             selected_answer = None
-            explosion_played = True  # prevent explosion sound
-            exploding = False        # stop any explosion event
+            explosion_played = True 
+            exploding = False       
         if exploding:
             draw_explosion()
         else:
@@ -957,9 +935,9 @@ while True:
 
         time_ratio = remaining_time / GAME_DURATION
         time_color = RED if time_ratio < 0.2 else YELLOW if time_ratio < 0.5 else YELLOW
-        pygame.draw.rect(screen, WHITE, (bar_x - 2, bar_y - 2, bar_width + 4, bar_height + 4))  # border
-        pygame.draw.rect(screen, BLACK, (bar_x, bar_y, bar_width, bar_height))  # background
-        pygame.draw.rect(screen, time_color, (bar_x, bar_y, int(bar_width * time_ratio), bar_height))  # fill
+        pygame.draw.rect(screen, WHITE, (bar_x - 2, bar_y - 2, bar_width + 4, bar_height + 4))
+        pygame.draw.rect(screen, BLACK, (bar_x, bar_y, bar_width, bar_height))
+        pygame.draw.rect(screen, time_color, (bar_x, bar_y, int(bar_width * time_ratio), bar_height))
 
         label_text = font.render("TEMPO:", True, WHITE)
         label_rect = label_text.get_rect(center=(bar_x + bar_width // 2, bar_y - 16))

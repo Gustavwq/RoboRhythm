@@ -191,6 +191,7 @@ def load_image(name):
 idle_frame = load_image("RobotIdle")
 jump_frames = load_image("RobotJump")
 hi_frame = load_image("RobotHI")
+pygame.display.set_icon(hi_frame)
 falling_frame = load_image("RobotFalling")
 sit_frame = load_image("RobotSit") 
 walk_frames = [load_image(f"RobotWalk{i}") for i in range(1, 7)]
